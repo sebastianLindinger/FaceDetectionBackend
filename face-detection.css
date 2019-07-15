@@ -1,0 +1,9 @@
+#overlay, .overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+body {
+  margin: 0;
+}
