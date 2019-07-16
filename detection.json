@@ -1,4 +1,5 @@
 {
+    "player": 1,
     "detection": {
         "_imageDims": {
             "_width": 640,

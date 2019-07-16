@@ -7,11 +7,20 @@ const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThres
 
 // Get socket.io object. Learn more at https://socket.io
 const socket = io();
+let player = 1;
 
 window.onload = () => {
     // Get references to HTML elements
     videoEl = document.getElementById('inputVideo');
     canvasEl = document.getElementById('overlay');
+
+    // Detect player parameter (e.g. http://localhost:3000/face-detection.html?player=1)
+    const url = new URL(window.location);
+    const playerParameter = url.searchParams.get("player");
+    if (playerParameter && !isNaN(playerParameter)) {
+        player = parseInt(playerParameter);
+        console.log(`Detected player parameter with value ${player}`);
+    }
 
     run();
 };
@@ -46,6 +55,7 @@ async function onPlay() {
         faceapi.draw.drawFaceLandmarks(canvasEl, resizedResult)
 
         // Send detection data to server using websockets
+        resizedResult.player = player;
         socket.emit('detection', JSON.stringify(resizedResult));
     }
 
