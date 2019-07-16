@@ -15,7 +15,7 @@ io.on('connection', function(socket){
 });
 
 // setInterval(() => {
-//   io.emit('detection', {
+//   io.emit('detection', JSON.stringify({
 //     "detection": {
 //         "_score": 0.9571357254155874,
 //         "_box": {
@@ -25,7 +25,7 @@ io.on('connection', function(socket){
 //             "_height": 236.27063250918766
 //         }
 //     }
-//   })
+//   }))
 // }, 1000);
 
 http.listen(3000, function(){
