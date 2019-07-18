@@ -11,7 +11,16 @@
     <link rel="stylesheet" href="face-detection.css">
 </head>
 <body>
-    <video onloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted></video>
+    <video onloadedmetadata="onPlay(this)" id="inputVideo" autoplay muted ></video> <br>
+
+    <select name="" id="select" style="position: absolute; top: 33rem;left:13rem;">
+            <option value="faceDetection">FaceDetection</option>
+            <option value="faceDetectionWithLandmarks">FaceDetectionWithLandmarks</option>
+            <option value="faceExpressionRecognition">FaceExpressionRecognition</option>
+        </select>
+
     <canvas id="overlay" />
+
+    
 </body>
 </html>

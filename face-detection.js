@@ -1,6 +1,9 @@
 let videoEl;
 let canvasEl;
+var comboBoxEl;
+
 let dims;
+let comboBoxValue;
 
 // Define detection options
 const options = new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.5 });
@@ -13,6 +16,7 @@ window.onload = () => {
     // Get references to HTML elements
     videoEl = document.getElementById('inputVideo');
     canvasEl = document.getElementById('overlay');
+    comboBoxEl = document.getElementById('select');
 
     // Detect player parameter (e.g. http://localhost:3000/face-detection.html?player=1)
     const url = new URL(window.location);
@@ -30,29 +34,43 @@ async function run() {
     if (!faceapi.nets.tinyFaceDetector.params) {
         await faceapi.nets.tinyFaceDetector.load('/weights/');
     }
-    await faceapi.loadFaceLandmarkTinyModel('/weights/')
+        await faceapi.loadFaceLandmarkTinyModel('/weights/');
+        await faceapi.loadFaceExpressionModel('/weights/');
 
     // Try to access users webcam and stream the images to the video element
-    const stream = await navigator.mediaDevices.getUserMedia({ video: {} })
-    videoEl.srcObject = stream
+    const stream = await navigator.mediaDevices.getUserMedia({ video: {} });
+    videoEl.srcObject = stream;
 }
 
 async function onPlay() {
-    // Check if model has already been loaded. If not, wait a little bit and try again
-    if (videoEl.paused || videoEl.ended || !faceapi.nets.tinyFaceDetector.params)
-        return setTimeout(() => onPlay(), 250);
+    comboBoxValue = comboBoxEl.value;
 
-    // Detect a face
-    const result = await faceapi.detectSingleFace(videoEl, options).withFaceLandmarks(true)
+    // Check if model has already been loaded. If not, wait a little bit and try again
+    if (videoEl.paused || videoEl.ended || !faceapi.nets.tinyFaceDetector.params) {
+        return setTimeout(() => onPlay(), 250);
+    }
+
+    let result;
+    if (comboBoxValue === 'faceDetection') {
+        result = await faceapi.detectSingleFace(videoEl, options);
+    } else if (comboBoxValue === 'faceDetectionWithLandmarks') {
+        result = await faceapi.detectSingleFace(videoEl, options).withFaceLandmarks(true);
+    } else {
+        result = await faceapi.detectSingleFace(videoEl, options).withFaceExpressions();
+    }
+
     if (result) {
-        // Prepare displaying detection result.
-        // See also https://github.com/justadudewhohacks/face-api.js#getting-started-displaying-detection-results
         dims = faceapi.matchDimensions(canvasEl, videoEl, true);
 
-        // Draw result
-        const resizedResult = faceapi.resizeResults(result, dims)
-        faceapi.draw.drawDetections(canvasEl, resizedResult)
-        faceapi.draw.drawFaceLandmarks(canvasEl, resizedResult)
+        //Draw result
+        const resizedResult = faceapi.resizeResults(result, dims);
+        faceapi.draw.drawDetections(canvasEl, resizedResult);
+        if (comboBoxValue === 'faceDetectionWithLandmarks') {
+            faceapi.draw.drawFaceLandmarks(canvasEl, resizedResult);
+        } else if (comboBoxValue === 'faceExpressionRecognition') {
+            const minConfidence = 0.05;
+            faceapi.draw.drawFaceExpressions(canvasEl, resizedResult, minConfidence);
+        }
 
         // Send detection data to server using websockets
         resizedResult.player = player;
@@ -60,5 +78,5 @@ async function onPlay() {
     }
 
     // Schedule next detection
-    setTimeout(() => onPlay())
+    setTimeout(() => onPlay());
 }
